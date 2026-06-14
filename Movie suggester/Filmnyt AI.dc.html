@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400..800;1,6..72,400..700&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box;}
+    html,body{margin:0;padding:0;}
+    ::selection{background:rgba(231,194,125,.3);}
+    @keyframes fnFloat{0%{transform:translateY(0)}50%{transform:translateY(-20px)}100%{transform:translateY(0)}}
+    @keyframes fnRise{0%{opacity:0;transform:translateY(28px) scale(.985)}100%{opacity:1;transform:translateY(0) scale(1)}}
+    @keyframes fnFade{0%{opacity:0}100%{opacity:1}}
+    @keyframes fnSpin{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}
+    @keyframes fnPulse{0%{transform:scale(.7);opacity:.5}100%{transform:scale(2.2);opacity:0}}
+    @keyframes fnGrain{0%{transform:translate(0,0)}100%{transform:translate(-9%,7%)}}
+    @keyframes fnBeam{0%{opacity:.3}50%{opacity:.6}100%{opacity:.3}}
+    @keyframes fnSlideL{0%{transform:translateX(40px);opacity:0}100%{transform:translateX(0);opacity:1}}
+    @keyframes fnShimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+    @keyframes fnImgIn{0%{opacity:0}100%{opacity:1}}
+    @keyframes fnBob{0%,100%{transform:translateY(0)}50%{transform:translateY(8px)}}
+    @media (prefers-reduced-motion: reduce){*{animation-duration:.001s !important;animation-iteration-count:1 !important;transition-duration:.01s !important;}}
+  </style>
+</helmet>
+
+<div ref="{{ setRoot }}" style="position:fixed;inset:0;background:#05070f;color:#f3efe6;font-family:'Hanken Grotesk',system-ui,sans-serif;overflow:hidden;">
+
+  <!-- persistent top bar -->
+  <div style="position:absolute;top:0;left:0;right:0;z-index:30;display:flex;align-items:center;justify-content:space-between;padding:20px 28px;pointer-events:none;">
+    <div onClick="{{ startOver }}" style="pointer-events:auto;cursor:pointer;display:flex;align-items:center;gap:9px;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.28em;text-transform:uppercase;color:#cdd3e2;">
+      <span style="width:8px;height:8px;border-radius:50%;background:#e7c27d;box-shadow:0 0 12px #e7c27d;"></span>Filmnyt<span style="color:#e7c27d;">AI</span>
+    </div>
+    <div style="pointer-events:auto;display:flex;align-items:center;gap:10px;">
+      <button onClick="{{ toggleAuth }}" style="cursor:pointer;display:flex;align-items:center;gap:7px;background:rgba(16,22,40,.5);backdrop-filter:blur(10px);border:1px solid rgba(231,194,125,.2);color:#f3efe6;border-radius:999px;padding:9px 15px;font-size:13px;font-weight:600;font-family:'Hanken Grotesk',sans-serif;" style-hover="border-color:rgba(231,194,125,.6)"><span style="width:8px;height:8px;border-radius:50%;border:1px solid #e7c27d;"></span>{{ userLabel }}</button>
+      <button onClick="{{ toggleWatch }}" style="cursor:pointer;display:flex;align-items:center;gap:8px;background:rgba(16,22,40,.55);backdrop-filter:blur(10px);border:1px solid rgba(231,194,125,.2);color:#f3efe6;border-radius:999px;padding:9px 16px;font-size:13px;font-weight:600;font-family:'Hanken Grotesk',sans-serif;" style-hover="border-color:rgba(231,194,125,.6)">
+        <span style="color:#e7c27d;">♥</span> {{ watchCount }}
+      </button>
+    </div>
+  </div>
+
+  <!-- ===================== LANDING ===================== -->
+  <sc-if value="{{ isLanding }}" hint-placeholder-val="{{ true }}">
+    <section data-screen-label="Landing" style="position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;animation:fnFade .9s ease;background:#05070f;">
+
+      <!-- HERO: scrolling movie-banner gallery with sticky centered text -->
+      <div style="position:relative;">
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;padding:92px 16px 16px;max-width:1180px;margin:0 auto;">
+          <div style="display:flex;flex-direction:column;gap:16px;">
+            <sc-for list="{{ galleryA }}" as="g" hint-placeholder-count="5"><div style="{{ g.style }}"><div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(5,7,15,.1),rgba(5,7,15,.3) 46%,rgba(5,7,15,.9));"></div><div style="position:absolute;top:11px;right:11px;background:rgba(8,11,22,.6);border:1px solid rgba(231,194,125,.35);border-radius:999px;padding:3px 9px;font-family:'JetBrains Mono',monospace;font-size:10px;color:#e7c27d;">&#9733; {{ g.rating }}</div><div style="position:absolute;left:0;right:0;bottom:0;padding:16px 13px 14px;"><div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.16em;color:#e7c27d;text-transform:uppercase;margin-bottom:6px;">{{ g.typeLabel }} &middot; {{ g.genre }}</div><div style="font-family:'Newsreader',serif;font-weight:700;font-size:17px;line-height:1.08;">{{ g.title }}</div><div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#9aa3ba;margin-top:3px;">{{ g.year }}</div></div></div></sc-for>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:16px;margin-top:-64px;">
+            <sc-for list="{{ galleryB }}" as="g" hint-placeholder-count="5"><div style="{{ g.style }}"><div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(5,7,15,.1),rgba(5,7,15,.3) 46%,rgba(5,7,15,.9));"></div><div style="position:absolute;top:11px;right:11px;background:rgba(8,11,22,.6);border:1px solid rgba(231,194,125,.35);border-radius:999px;padding:3px 9px;font-family:'JetBrains Mono',monospace;font-size:10px;color:#e7c27d;">&#9733; {{ g.rating }}</div><div style="position:absolute;left:0;right:0;bottom:0;padding:16px 13px 14px;"><div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.16em;color:#e7c27d;text-transform:uppercase;margin-bottom:6px;">{{ g.typeLabel }} &middot; {{ g.genre }}</div><div style="font-family:'Newsreader',serif;font-weight:700;font-size:17px;line-height:1.08;">{{ g.title }}</div><div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#9aa3ba;margin-top:3px;">{{ g.year }}</div></div></div></sc-for>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:16px;margin-top:-28px;">
+            <sc-for list="{{ galleryC }}" as="g" hint-placeholder-count="5"><div style="{{ g.style }}"><div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(5,7,15,.1),rgba(5,7,15,.3) 46%,rgba(5,7,15,.9));"></div><div style="position:absolute;top:11px;right:11px;background:rgba(8,11,22,.6);border:1px solid rgba(231,194,125,.35);border-radius:999px;padding:3px 9px;font-family:'JetBrains Mono',monospace;font-size:10px;color:#e7c27d;">&#9733; {{ g.rating }}</div><div style="position:absolute;left:0;right:0;bottom:0;padding:16px 13px 14px;"><div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.16em;color:#e7c27d;text-transform:uppercase;margin-bottom:6px;">{{ g.typeLabel }} &middot; {{ g.genre }}</div><div style="font-family:'Newsreader',serif;font-weight:700;font-size:17px;line-height:1.08;">{{ g.title }}</div><div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#9aa3ba;margin-top:3px;">{{ g.year }}</div></div></div></sc-for>
+          </div>
+        </div>
+
+        <div style="position:absolute;inset:0;pointer-events:none;">
+          <div style="position:sticky;top:0;height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;overflow:hidden;">
+            <div style="position:absolute;inset:0;background:radial-gradient(120% 78% at 50% 42%,rgba(5,7,15,.3),rgba(5,7,15,.9) 80%);"></div>
+            <div style="position:relative;z-index:2;padding:24px;display:flex;flex-direction:column;align-items:center;">
+              <div style="font-family:'JetBrains Mono',monospace;letter-spacing:.26em;font-size:11.5px;color:#e7c27d;text-transform:uppercase;">The decision engine for movie night</div>
+              <h1 style="font-family:'Newsreader',serif;font-weight:700;font-size:clamp(46px,7.8vw,108px);line-height:.96;margin:18px 0 0;letter-spacing:-.02em;max-width:15ch;text-shadow:0 24px 70px rgba(0,0,0,.75);">Stop scrolling.<br><em style="font-style:italic;font-weight:600;color:#e7c27d;">Start watching.</em></h1>
+              <p style="max-width:46ch;color:#c2c9d8;font-size:clamp(15px,1.65vw,19px);line-height:1.55;margin:22px 0 0;text-shadow:0 2px 24px rgba(0,0,0,.85);">Eight quick questions about your mood and your night. Filmnyt commits to <span style="color:#fff;">one decisive pick</span> &mdash; and tells you exactly why.</p>
+              <button onClick="{{ start }}" style="pointer-events:auto;margin-top:34px;cursor:pointer;border:none;border-radius:999px;font-family:'Hanken Grotesk',sans-serif;font-weight:700;font-size:16px;color:#1a130a;padding:18px 40px;background:linear-gradient(135deg,#f0d394,#e7c27d 55%,#cf9f4f);box-shadow:0 20px 54px -14px rgba(231,194,125,.6),inset 0 1px 1px rgba(255,255,255,.55);transition:transform .25s ease,box-shadow .25s ease;" style-hover="transform:translateY(-3px);box-shadow:0 26px 64px -14px rgba(231,194,125,.78)">Help me decide&nbsp;&nbsp;&rarr;</button>
+              <div style="margin-top:30px;display:flex;flex-direction:column;align-items:center;gap:7px;color:#6b748c;animation:fnBob 2.4s ease-in-out infinite;">
+                <span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.25em;">SCROLL</span>
+                <span style="font-size:16px;">&darr;</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ABOUT / HOW IT WORKS -->
+      <div style="position:relative;z-index:3;background:linear-gradient(180deg,rgba(5,7,15,0),#05070f 9%);padding:74px 28px 64px;">
+        <div style="max-width:1000px;margin:0 auto;">
+          <div style="text-align:center;font-family:'JetBrains Mono',monospace;letter-spacing:.28em;font-size:11px;color:#e7c27d;text-transform:uppercase;">How it works</div>
+          <h2 style="text-align:center;font-family:'Newsreader',serif;font-weight:700;font-size:clamp(28px,4vw,46px);margin:14px 0 0;line-height:1.08;">Less of a search box.<br>More of a friend who just <em style="font-style:italic;color:#e7c27d;">picks</em>.</h2>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px;margin-top:46px;">
+            <div style="background:rgba(16,22,40,.45);border:1px solid rgba(231,194,125,.14);border-radius:18px;padding:26px;"><div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#cf9f4f;letter-spacing:.1em;">01</div><div style="font-family:'Newsreader',serif;font-weight:700;font-size:21px;margin-top:12px;">Tell us the vibe</div><div style="margin-top:9px;color:#9aa3ba;font-size:14px;line-height:1.5;">Eight quick taps: mood, energy, genres, era, runtime, a few titles you love, and the services you actually have.</div></div>
+            <div style="background:rgba(16,22,40,.45);border:1px solid rgba(231,194,125,.14);border-radius:18px;padding:26px;"><div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#cf9f4f;letter-spacing:.1em;">02</div><div style="font-family:'Newsreader',serif;font-weight:700;font-size:21px;margin-top:12px;">We weigh it</div><div style="margin-top:9px;color:#9aa3ba;font-size:14px;line-height:1.5;">A deterministic engine scores every title on genre overlap, mood, energy fit, runtime, era, availability and your taste &mdash; then ranks them.</div></div>
+            <div style="background:rgba(16,22,40,.45);border:1px solid rgba(231,194,125,.14);border-radius:18px;padding:26px;"><div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#cf9f4f;letter-spacing:.1em;">03</div><div style="font-family:'Newsreader',serif;font-weight:700;font-size:21px;margin-top:12px;">One verdict</div><div style="margin-top:9px;color:#9aa3ba;font-size:14px;line-height:1.5;">A single decisive pick with a confidence score and a one-line reason &mdash; plus two backups, and a re-roll if you&rsquo;re not sold.</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DISCOVERY RAIL -->
+      <div style="position:relative;z-index:3;background:#05070f;padding:8px 0 26px;">
+        <div style="max-width:1180px;margin:0 auto;padding:0 24px;display:flex;align-items:baseline;justify-content:space-between;">
+          <div style="font-family:'Newsreader',serif;font-weight:700;font-size:22px;">Critically loved</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#5f6880;">drag to browse &rarr;</div>
+        </div>
+        <div style="display:flex;gap:14px;overflow-x:auto;padding:18px 24px 24px;scroll-snap-type:x mandatory;">
+          <sc-for list="{{ gallery }}" as="g" hint-placeholder-count="8"><div style="flex:0 0 148px;scroll-snap-align:start;"><div style="{{ g.style }}"><div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(5,7,15,.1),rgba(5,7,15,.3) 46%,rgba(5,7,15,.9));"></div><div style="position:absolute;top:9px;right:9px;background:rgba(8,11,22,.6);border:1px solid rgba(231,194,125,.35);border-radius:999px;padding:2px 7px;font-family:'JetBrains Mono',monospace;font-size:9px;color:#e7c27d;">&#9733; {{ g.rating }}</div><div style="position:absolute;left:0;right:0;bottom:0;padding:14px 10px 11px;"><div style="font-family:'Newsreader',serif;font-weight:700;font-size:14px;line-height:1.08;">{{ g.title }}</div><div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#9aa3ba;margin-top:2px;">{{ g.year }}</div></div></div></div></sc-for>
+        </div>
+      </div>
+
+      <!-- CLOSING CTA + FOOTER -->
+      <section style="position:relative;z-index:3;background:#05070f;border-top:1px solid rgba(231,194,125,.08);padding:96px 0 0;overflow:hidden;">
+        <div style="max-width:760px;margin:0 auto;text-align:center;padding:0 28px;">
+          <div style="font-family:'JetBrains Mono',monospace;letter-spacing:.3em;font-size:11px;color:#e7c27d;text-transform:uppercase;">Ready when you are</div>
+          <h2 style="font-family:'Newsreader',serif;font-weight:700;font-size:clamp(30px,5vw,58px);line-height:1.04;margin:16px 0 0;">Tonight&rsquo;s pick is<br><em style="font-style:italic;color:#e7c27d;">one tap away.</em></h2>
+          <p style="color:#9aa3ba;font-size:16px;line-height:1.55;margin:18px auto 0;max-width:44ch;">No endless scrolling, no decision paralysis &mdash; answer eight quick questions and let Filmnyt commit to the call.</p>
+          <button onClick="{{ start }}" style="margin-top:30px;cursor:pointer;border:none;border-radius:999px;font-family:'Hanken Grotesk',sans-serif;font-weight:700;font-size:15px;color:#1a130a;padding:16px 34px;background:linear-gradient(135deg,#f0d394,#e7c27d 55%,#cf9f4f);box-shadow:0 18px 48px -14px rgba(231,194,125,.6),inset 0 1px 1px rgba(255,255,255,.55);transition:transform .25s ease,box-shadow .25s ease;" style-hover="transform:translateY(-3px);box-shadow:0 24px 60px -14px rgba(231,194,125,.78)">Help me decide&nbsp;&nbsp;&rarr;</button>
+        </div>
+        <div style="font-family:'Newsreader',serif;font-weight:800;font-size:clamp(64px,15.5vw,260px);line-height:.78;text-align:center;background:linear-gradient(180deg,rgba(231,194,125,.4),rgba(231,194,125,.03));-webkit-background-clip:text;background-clip:text;color:transparent;letter-spacing:-.02em;user-select:none;margin-top:70px;padding:0 12px;">FILMNYT</div>
+        <div style="background:#0a0f1f;border-top:1px solid rgba(231,194,125,.12);padding:24px 28px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+          <div style="display:flex;align-items:center;gap:9px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.1em;color:#5f6880;"><span style="width:7px;height:7px;border-radius:50%;background:#e7c27d;box-shadow:0 0 10px #e7c27d;"></span>FILMNYT AI &middot; your taste, decided</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#3f475c;letter-spacing:.08em;">&copy; 2026 &middot; a demo decision engine</div>
+        </div>
+      </section>
+
+    </section>
+  </sc-if>
+
+  <!-- ===================== INTERVIEW ===================== -->
+  <sc-if value="{{ isInterview }}">
+    <section data-screen-label="Interview" style="position:absolute;inset:0;display:flex;flex-direction:column;animation:fnFade .5s ease;background:radial-gradient(110% 85% at 50% -5%,rgba(20,28,55,.6),rgba(5,7,15,1));">
+      <div style="padding:74px 32px 0;max-width:980px;width:100%;margin:0 auto;">
+        <div style="display:flex;align-items:center;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.2em;color:#8a93a8;">
+          <span>SCENE {{ sceneNo }} / 08</span><span style="color:#e7c27d;">{{ stepKicker }}</span>
+        </div>
+        <div style="margin-top:12px;height:3px;background:rgba(231,194,125,.14);border-radius:2px;overflow:hidden;">
+          <div style="{{ progressStyle }}"><div style="height:100%;background:linear-gradient(90deg,#cf9f4f,#e7c27d);border-radius:2px;"></div></div>
+        </div>
+      </div>
+
+      <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:18px 28px;overflow:auto;">
+        <div style="width:100%;max-width:940px;">
+
+          <sc-if value="{{ isStepType }}">
+            <div style="animation:fnRise .5s ease;">
+              <h2 style="font-family:'Newsreader',serif;font-weight:700;font-size:clamp(30px,4.4vw,52px);line-height:1.04;margin:0;text-align:center;">A film, or something to live in?</h2>
+              <p style="text-align:center;color:#9aa3ba;margin:14px 0 30px;font-size:16px;">Pick the format for tonight — or let us choose.</p>
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:16px;">
+                <sc-for list="{{ typeOptions }}" as="o" hint-placeholder-count="3">
+                  <div onClick="{{ o.onClick }}" style="{{ o.style }}" style-hover="transform:translateY(-4px)">
+                    <div style="font-family:'Newsreader',serif;font-weight:700;font-size:24px;">{{ o.label }}</div>
+                    <div style="margin-top:6px;font-family:'JetBrains Mono',monospace;font-size:12px;color:#8a93a8;letter-spacing:.04em;">{{ o.desc }}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ isStepMood }}">
+            <div style="animation:fnRise .5s ease;">
+              <h2 style="font-family:'Newsreader',serif;font-weight:700;font-size:clamp(30px,4.4vw,52px);line-height:1.04;margin:0;text-align:center;">What's the mood you're chasing?</h2>
+              <p style="text-align:center;color:#9aa3ba;margin:14px 0 30px;font-size:16px;">The feeling matters more than the genre.</p>
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;">
+                <sc-for list="{{ moodOptions }}" as="o" hint-placeholder-count="6">
+                  <div onClick="{{ o.onClick }}" style="{{ o.style }}" style-hover="transform:translateY(-4px)">
+                    <div style="display:flex;align-items:center;gap:10px;">
+                      <span style="{{ o.dotStyle }}"></span>
+                      <span style="font-family:'Newsreader',serif;font-weight:700;font-size:21px;">{{ o.label }}</span>
+                    </div>
+                    <div style="margin-top:7px;font-family:'JetBrains Mono',monospace;font-size:11.5px;color:#8a93a8;">{{ o.desc }}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ isStepEnergy }}">
+            <div style="animation:fnRise .5s ease;text-align:center;">
+              <h2 style="font-family:'Newsreader',serif;font-weight:700;font-size:clamp(30px,4.4vw,52px);line-height:1.04;margin:0;">How much brain do you have tonight?</h2>
+              <p style="color:#9aa3ba;margin:14px 0 6px;font-size:16px;">Drag between switching off and leaning in.</p>
+              <div style="font-family:'Newsreader',serif;font-style:italic;font-size:26px;color:#e7c27d;margin:14px 0 0;">{{ energyLabel }}</div>
+              <div style="position:relative;max-width:520px;margin:44px auto 0;height:72px;">
+                <div style="{{ energyNumPos }}">{{ energyNumber }}</div>
+                <div style="position:absolute;left:0;right:0;top:50%;height:4px;transform:translateY(-50%);background:rgba(231,194,125,.16);border-radius:999px;"></div>
+                <div style="{{ energyRangeStyle }}"></div>
+                <div style="{{ energyThumbStyle }}"></div>
+                <input type="range" min="1" max="5" step="1" value="{{ energyValue }}" onInput="{{ onEnergyInput }}" onChange="{{ onEnergyInput }}" aria-label="Energy level" style="position:absolute;left:0;top:0;width:100%;height:100%;opacity:0;margin:0;cursor:grab;" />
+              </div>
+              <div style="display:flex;justify-content:space-between;max-width:520px;margin:10px auto 0;font-family:'JetBrains Mono',monospace;font-size:11px;color:#5f6880;letter-spacing:.08em;">
+                <span>TOTAL SWITCH-OFF</span><span>MAKE ME THINK</span>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ isStepGenres }}">
+            <div style="animation:fnRise .5s ease;text-align:center;">
+              <h2 style="font-family:'Newsreader',serif;font-weight:700;font-size:clamp(30px,4.4vw,52px);line-height:1.04;margin:0;">Which worlds do you love?</h2>
+              <p style="color:#9aa3ba;margin:14px 0 30px;font-size:16px;">Pick a few — we weight the overlap.</p>
+              <div style="display:flex;flex-wrap:wrap;gap:11px;justify-content:center;max-width:740px;margin:0 auto;">
+                <sc-for list="{{ genreOptions }}" as="o" hint-placeholder-count="13">
+                  <div onClick="{{ o.onClick }}" style="{{ o.style }}" style-hover="transform:translateY(-2px)">{{ o.label }}</div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ isStepEra }}">
+            <div style="animation:fnRise .5s ease;">
+              <h2 style="font-family:'Newsreader',serif;font-weight:700;font-size:clamp(30px,4.4vw,52px);line-height:1.04;margin:0;text-align:center;">Old soul, or fresh print?</h2>
+              <p style="text-align:center;color:#9aa3ba;margin:14px 0 30px;font-size:16px;">Lean toward the canon, the contemporary, or neither.</p>
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:16px;">
+                <sc-for list="{{ eraOptions }}" as="o" hint-placeholder-count="3">
+                  <div onClick="{{ o.onClick }}" style="{{ o.style }}" style-hover="transform:translateY(-4px)">
+                    <div style="font-family:'Newsreader',serif;font-weight:700;font-size:23px;">{{ o.label }}</div>
+                    <div style="margin-top:6px;font-family:'JetBrains Mono',monospace;font-size:12px;color:#8a93a8;">{{ o.desc }}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ isStepRuntime }}">
+            <div style="animation:fnRise .5s ease;">
+              <h2 style="font-family:'Newsreader',serif;font-weight:700;font-size:clamp(30px,4.4vw,52px);line-height:1.04;margin:0;text-align:center;">How much time can you give it?</h2>
+              <p style="text-align:center;color:#9aa3ba;margin:14px 0 30px;font-size:16px;">We'll respect your runtime — or episode length.</p>
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;max-width:680px;margin:0 auto;">
+                <sc-for list="{{ runtimeOptions }}" as="o" hint-placeholder-count="4">
+                  <div onClick="{{ o.onClick }}" style="{{ o.style }}" style-hover="transform:translateY(-4px)">
+                    <div style="font-family:'Newsreader',serif;font-weight:700;font-size:22px;">{{ o.label }}</div>
+                    <div style="margin-top:6px;font-family:'JetBrains Mono',monospace;font-size:12px;color:#8a93a8;">{{ o.desc }}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ isStepLoved }}">
+            <div style="animation:fnRise .5s ease;text-align:center;">
+              <h2 style="font-family:'Newsreader',serif;font-weight:700;font-size:clamp(30px,4.4vw,52px);line-height:1.04;margin:0;">Name a few you already love.</h2>
+              <p style="color:#9aa3ba;margin:14px 0 0;font-size:16px;">Up to three — we'll hunt for its kindred spirits. Optional.</p>
+              <div style="position:relative;max-width:520px;margin:26px auto 0;">
+                <input value="{{ lovedQuery }}" onChange="{{ onLovedInput }}" placeholder="Start typing a title…" style="width:100%;background:rgba(16,22,40,.6);border:1px solid rgba(231,194,125,.22);border-radius:14px;padding:15px 18px;color:#f3efe6;font-size:16px;font-family:'Hanken Grotesk',sans-serif;outline:none;" style-focus="border-color:rgba(231,194,125,.7)" />
+                <sc-if value="{{ hasSuggestions }}">
+                  <div style="position:absolute;left:0;right:0;top:60px;z-index:5;background:rgba(12,16,30,.98);border:1px solid rgba(231,194,125,.2);border-radius:14px;overflow:hidden;box-shadow:0 24px 50px -18px rgba(0,0,0,.7);">
+                    <sc-for list="{{ lovedSuggestions }}" as="s" hint-placeholder-count="4">
+                      <div onClick="{{ s.onClick }}" style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,.05);" style-hover="background:rgba(231,194,125,.1)">
+                        <span style="font-family:'Newsreader',serif;font-size:17px;">{{ s.title }}</span>
+                        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#8a93a8;">{{ s.sub }}</span>
+                      </div>
+                    </sc-for>
+                  </div>
+                </sc-if>
+              </div>
+              <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;max-width:560px;margin:18px auto 0;">
+                <sc-for list="{{ lovedChips }}" as="c" hint-placeholder-count="0">
+                  <div style="display:flex;align-items:center;gap:9px;padding:9px 14px;border-radius:999px;background:rgba(231,194,125,.14);border:1px solid rgba(231,194,125,.5);font-weight:600;font-size:14px;">{{ c.title }}<span onClick="{{ c.onRemove }}" style="cursor:pointer;color:#cf9f4f;font-size:16px;">✕</span></div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ isStepServices }}">
+            <div style="animation:fnRise .5s ease;text-align:center;">
+              <h2 style="font-family:'Newsreader',serif;font-weight:700;font-size:clamp(30px,4.4vw,52px);line-height:1.04;margin:0;">Where can you actually watch?</h2>
+              <p style="color:#9aa3ba;margin:14px 0 30px;font-size:16px;">Pick your services so we only suggest what you can stream. Optional.</p>
+              <div style="display:flex;flex-wrap:wrap;gap:11px;justify-content:center;max-width:640px;margin:0 auto;">
+                <sc-for list="{{ serviceOptions }}" as="o" hint-placeholder-count="8">
+                  <div onClick="{{ o.onClick }}" style="{{ o.style }}" style-hover="transform:translateY(-2px)">{{ o.label }}</div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:20px 32px 30px;max-width:980px;width:100%;margin:0 auto;">
+        <button onClick="{{ back }}" style="cursor:pointer;background:rgba(16,22,40,.5);border:1px solid rgba(231,194,125,.28);color:#dfe3ec;border-radius:999px;padding:13px 24px;font-size:14px;font-weight:600;font-family:'Hanken Grotesk',sans-serif;transition:transform .25s ease,border-color .25s ease;" style-hover="transform:translateY(-2px);border-color:rgba(231,194,125,.6)">&larr; Back</button>
+        <div style="display:flex;gap:9px;">
+          <sc-for list="{{ dots }}" as="d" hint-placeholder-count="8"><span style="{{ d.style }}"></span></sc-for>
+        </div>
+        <button onClick="{{ next }}" disabled="{{ nextDisabled }}" style="{{ nextStyle }}" style-hover="transform:translateY(-2px)">{{ nextLabel }}</button>
+      </div>
+    </section>
+  </sc-if>
+
+  <!-- ===================== THINKING ===================== -->
+  <sc-if value="{{ isThinking }}">
+    <section data-screen-label="Thinking" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:30px;animation:fnFade .4s ease;background:radial-gradient(100% 80% at 50% 50%,rgba(20,28,55,.55),rgba(5,7,15,1));">
+      <div style="position:relative;width:128px;height:128px;">
+        <div style="position:absolute;inset:0;border:1px solid rgba(231,194,125,.4);border-radius:50%;animation:fnPulse 2.2s ease-out infinite;"></div>
+        <div style="position:absolute;inset:0;border:1px solid rgba(231,194,125,.4);border-radius:50%;animation:fnPulse 2.2s ease-out infinite 1.1s;"></div>
+        <div style="position:absolute;inset:16px;border-radius:50%;border:2px solid rgba(231,194,125,.22);border-top-color:#e7c27d;animation:fnSpin 1.1s linear infinite;"></div>
+        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;"><span style="width:12px;height:12px;border-radius:50%;background:#e7c27d;box-shadow:0 0 16px #e7c27d;"></span></div>
+      </div>
+      <div style="font-family:'Newsreader',serif;font-weight:700;font-size:clamp(26px,4vw,40px);text-align:center;">Committing to your pick…</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:13px;letter-spacing:.1em;color:#e7c27d;height:18px;">{{ thinkingText }}</div>
+    </section>
+  </sc-if>
+
+  <!-- ===================== VERDICT ===================== -->
+  <sc-if value="{{ isVerdict }}">
+    <section data-screen-label="Verdict" style="position:absolute;inset:0;overflow:hidden;animation:fnFade .5s ease;background:#000;">
+      <video autoplay loop muted playsinline onCanPlay="{{ playVid }}" onLoadedData="{{ playVid }}" src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260611_183632_c311af08-e4b7-458f-81e7-79847a49b3d3.mp4" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;"></video>
+      <div style="position:absolute;inset:0;z-index:1;background:radial-gradient(120% 95% at 50% 46%,rgba(3,5,12,.42),rgba(3,5,12,.86));"></div>
+      <x-import component-from-global-scope="MovieCarousel" from="./MovieCarousel.js" movies="{{ carouselMovies }}" selected="{{ cardIndex }}" on-select="{{ onCardSelect }}" on-open="{{ onCardOpen }}" hint-size="100%,100%" style="position:absolute;inset:0;z-index:2;"></x-import>
+
+      <sc-if value="{{ browseHint }}" hint-placeholder-val="{{ true }}">
+      <div style="position:absolute;left:0;right:0;bottom:32px;z-index:5;display:flex;justify-content:center;padding:0 16px;pointer-events:none;animation:fnRise .5s ease;">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:7px;text-align:center;background:rgba(10,14,26,.62);backdrop-filter:blur(14px) saturate(1.2);-webkit-backdrop-filter:blur(14px) saturate(1.2);border:1px solid rgba(231,194,125,.22);border-radius:16px;padding:13px 22px;box-shadow:0 20px 50px -24px rgba(0,0,0,.8);">
+          <div style="display:flex;align-items:center;gap:9px;font-family:'JetBrains Mono',monospace;font-size:11.5px;letter-spacing:.24em;color:#e7c27d;text-transform:uppercase;"><span style="width:6px;height:6px;border-radius:50%;background:#e7c27d;box-shadow:0 0 10px #e7c27d;"></span>Your verdict &middot; {{ card.confidenceLabel }}</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#aeb6c8;letter-spacing:.16em;">TAP A CARD &middot; SCROLL TO BROWSE</div>
+        </div>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ cardOpened }}">
+      <div style="position:absolute;left:0;right:0;bottom:0;z-index:6;padding:0 16px 20px;display:flex;justify-content:center;">
+        <div style="width:min(720px,96vw);background:rgba(10,14,26,.8);backdrop-filter:blur(18px) saturate(1.2);-webkit-backdrop-filter:blur(18px) saturate(1.2);border:1px solid rgba(231,194,125,.2);border-radius:22px;padding:18px 20px;box-shadow:0 30px 80px -30px rgba(0,0,0,.9);animation:fnRise .5s ease;">
+          <div style="display:flex;gap:16px;align-items:flex-start;">
+            <div style="{{ card.posterStyle }}"></div>
+            <div style="flex:1;min-width:0;">
+              <h2 style="font-family:'Newsreader',serif;font-weight:700;font-size:clamp(22px,3vw,30px);line-height:1.04;margin:0;">{{ card.title }}</h2>
+              <div style="margin-top:7px;font-family:'JetBrains Mono',monospace;font-size:12px;color:#9aa3ba;">{{ card.metaLine }}</div>
+              <sc-if value="{{ card.hasBy }}"><div style="margin-top:5px;font-size:13px;color:#cdd3e2;">{{ card.by }}</div></sc-if>
+              <p style="font-family:'Newsreader',serif;font-style:italic;font-size:clamp(14px,1.7vw,17px);line-height:1.4;color:#f3efe6;margin:11px 0 0;">{{ card.why }}</p>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:14px;margin-top:14px;">
+            <div style="flex:1;">
+              <div style="display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:10.5px;color:#8a93a8;letter-spacing:.08em;"><span>CONFIDENCE</span><span style="color:#e7c27d;">{{ card.confidence }}%</span></div>
+              <div style="margin-top:6px;height:6px;background:rgba(231,194,125,.14);border-radius:3px;overflow:hidden;"><div style="{{ card.confStyle }}"><div style="height:100%;background:linear-gradient(90deg,#cf9f4f,#e7c27d);border-radius:3px;"></div></div></div>
+            </div>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:15px;">
+            <button onClick="{{ card.onSave }}" style="{{ card.saveStyle }}" style-hover="transform:translateY(-2px)">{{ card.saveLabel }}</button>
+            <button onClick="{{ adjust }}" style="cursor:pointer;background:rgba(16,22,40,.6);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(231,194,125,.3);color:#f3efe6;border-radius:999px;padding:13px 24px;font-size:14px;font-weight:600;font-family:'Hanken Grotesk',sans-serif;transition:transform .25s ease,border-color .25s ease;" style-hover="transform:translateY(-2px);border-color:rgba(231,194,125,.6)">Adjust answers</button>
+            <button onClick="{{ startOver }}" style="cursor:pointer;background:transparent;border:none;color:#8a93a8;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.1em;padding:12px 8px;" style-hover="color:#e7c27d">&#8634; Start over</button>
+          </div>
+        </div>
+      </div>
+      </sc-if>
+    </section>
+  </sc-if>
+
+  <!-- ===================== SIGN IN ===================== -->
+  <sc-if value="{{ showAuth }}">
+    <div onClick="{{ toggleAuth }}" style="position:absolute;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;padding:24px;background:rgba(3,5,12,.72);backdrop-filter:blur(6px);animation:fnFade .25s ease;">
+      <div onClick="{{ stop }}" style="width:min(420px,94vw);background:rgba(11,15,28,.98);border:1px solid rgba(231,194,125,.2);border-radius:22px;padding:32px;box-shadow:0 40px 100px -30px rgba(0,0,0,.8);animation:fnRise .4s ease;">
+        <div style="display:flex;align-items:center;gap:9px;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.28em;text-transform:uppercase;color:#cdd3e2;"><span style="width:8px;height:8px;border-radius:50%;background:#e7c27d;box-shadow:0 0 12px #e7c27d;"></span>Filmnyt<span style="color:#e7c27d;">AI</span></div>
+        <h2 style="font-family:'Newsreader',serif;font-weight:700;font-size:28px;margin:18px 0 0;">Save your verdicts.</h2>
+        <p style="color:#9aa3ba;font-size:14px;line-height:1.5;margin:8px 0 0;">Sign in to keep your watchlist and history across devices &mdash; or keep going as a guest.</p>
+        <input value="{{ authEmail }}" onChange="{{ onAuthEmail }}" placeholder="you@email.com" style="width:100%;margin-top:22px;background:rgba(16,22,40,.6);border:1px solid rgba(231,194,125,.22);border-radius:13px;padding:14px 16px;color:#f3efe6;font-size:15px;font-family:'Hanken Grotesk',sans-serif;outline:none;" style-focus="border-color:rgba(231,194,125,.7)" />
+        <button onClick="{{ signInEmail }}" style="width:100%;margin-top:12px;cursor:pointer;border:none;font-family:'Hanken Grotesk',sans-serif;font-weight:700;font-size:15px;color:#1a130a;padding:14px;border-radius:13px;background:linear-gradient(135deg,#f0d394,#e7c27d 55%,#cf9f4f);box-shadow:0 12px 34px -12px rgba(231,194,125,.6);" style-hover="filter:brightness(1.05)">Continue with email</button>
+        <div style="display:flex;align-items:center;gap:12px;margin:18px 0;"><div style="flex:1;height:1px;background:rgba(255,255,255,.08);"></div><span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#5f6880;">OR</span><div style="flex:1;height:1px;background:rgba(255,255,255,.08);"></div></div>
+        <button onClick="{{ continueGuest }}" style="width:100%;cursor:pointer;background:rgba(16,22,40,.6);border:1px solid rgba(231,194,125,.28);color:#dfe3ec;border-radius:13px;padding:13px;font-size:14px;font-weight:600;font-family:'Hanken Grotesk',sans-serif;" style-hover="border-color:rgba(231,194,125,.6)">Continue as guest</button>
+        <sc-if value="{{ isSignedIn }}"><button onClick="{{ signOut }}" style="width:100%;margin-top:10px;cursor:pointer;background:transparent;border:none;color:#5f6880;font-size:12px;font-family:'JetBrains Mono',monospace;letter-spacing:.1em;" style-hover="color:#e08a8a">Sign out</button></sc-if>
+        <div style="margin-top:16px;font-family:'JetBrains Mono',monospace;font-size:10px;color:#5f6880;text-align:center;line-height:1.5;">Demo auth &mdash; no real account is created. OAuth / email magic-link is specced in ARCHITECTURE.md.</div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ===================== WATCHLIST OVERLAY ===================== -->
+  <sc-if value="{{ showWatch }}">
+    <div onClick="{{ toggleWatch }}" style="position:absolute;inset:0;z-index:40;display:flex;justify-content:flex-end;background:rgba(3,5,12,.6);backdrop-filter:blur(3px);animation:fnFade .25s ease;">
+      <aside onClick="{{ stop }}" style="width:min(430px,92vw);height:100%;background:rgba(9,12,24,.97);border-left:1px solid rgba(231,194,125,.18);padding:26px;overflow:auto;animation:fnSlideL .35s ease;">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <div style="font-family:'Newsreader',serif;font-weight:700;font-size:24px;">Watchlist</div>
+          <button onClick="{{ toggleWatch }}" style="cursor:pointer;background:transparent;border:1px solid rgba(255,255,255,.14);color:#c7cdda;width:34px;height:34px;border-radius:50%;font-size:16px;" style-hover="border-color:rgba(231,194,125,.5)">✕</button>
+        </div>
+
+        <sc-if value="{{ watchEmpty }}">
+          <div style="margin-top:40px;text-align:center;color:#5f6880;font-size:14px;line-height:1.6;">Nothing saved yet.<br>When Filmnyt picks something you like, hit <span style="color:#e7c27d;">Save</span>.</div>
+        </sc-if>
+
+        <div style="display:flex;flex-direction:column;gap:12px;margin-top:22px;">
+          <sc-for list="{{ watchlist }}" as="w" hint-placeholder-count="2">
+            <div style="display:flex;gap:13px;align-items:center;padding:11px;border-radius:13px;background:rgba(16,22,40,.6);border:1px solid rgba(255,255,255,.06);">
+              <div style="{{ w.poster }}"><sc-if value="{{ w.loading }}"><div style="position:absolute;inset:0;background:linear-gradient(90deg,rgba(255,255,255,0),rgba(255,255,255,.08),rgba(255,255,255,0));background-size:200% 100%;animation:fnShimmer 1.2s linear infinite;"></div></sc-if></div>
+              <div style="flex:1;"><div style="font-family:'Newsreader',serif;font-weight:700;font-size:16px;">{{ w.title }}</div><div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#8a93a8;margin-top:3px;">{{ w.metaLine }}</div></div>
+              <button onClick="{{ w.onRemove }}" style="cursor:pointer;background:transparent;border:none;color:#5f6880;font-size:18px;" style-hover="color:#e08a8a">✕</button>
+            </div>
+          </sc-for>
+        </div>
+
+        <sc-if value="{{ hasHistory }}">
+          <div style="margin-top:30px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.2em;color:#8a93a8;text-transform:uppercase;">Recent verdicts</div>
+          <div style="display:flex;flex-direction:column;gap:2px;margin-top:12px;">
+            <sc-for list="{{ history }}" as="h" hint-placeholder-count="3">
+              <div style="display:flex;justify-content:space-between;padding:9px 2px;border-bottom:1px solid rgba(255,255,255,.05);font-size:13px;"><span style="color:#cdd3e2;">{{ h.title }}</span><span style="font-family:'JetBrains Mono',monospace;color:#5f6880;font-size:12px;">{{ h.year }}</span></div>
+            </sc-for>
+          </div>
+        </sc-if>
+      </aside>
+    </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  constructor(props){
+    super(props);
+    this.state = {
+      screen:'landing', step:0,
+      answers:{ type:null, mood:null, energy:3, genres:[], era:'any', maxRuntime:null, loved:[], services:[] },
+      lovedQuery:'',
+      posters:{},
+      showAuth:false, user:null, authEmail:'',
+      ranked:[], pointer:0,
+      showWatch:false, watchlist:[], history:[], cardIndex:0, cardOpened:false,
+      reduced:false, thinkLine:0
+    };
+    this.setRoot = this.setRoot.bind(this);
+    this.onMove = this.onMove.bind(this);
+    this.persist = this.persist.bind(this);
+
+    const HUES = [255,68,190,300,22,275,210,330,160,240,40,290];
+    this.data = [
+      {id:'inception',title:'Inception',year:2010,type:'movie',runtime:148,rating:8.8,genres:['sci-fi','thriller','action'],moods:['intense','thought-provoking'],energy:5},
+      {id:'grand-budapest',title:'The Grand Budapest Hotel',year:2014,type:'movie',runtime:99,rating:8.1,genres:['comedy','adventure','drama'],moods:['fun','cozy'],energy:3},
+      {id:'spirited-away',title:'Spirited Away',year:2001,type:'movie',runtime:125,rating:8.6,genres:['animation','fantasy','adventure'],moods:['cozy','thought-provoking'],energy:3},
+      {id:'parasite',title:'Parasite',year:2019,type:'movie',runtime:132,rating:8.5,genres:['thriller','drama'],moods:['intense','thought-provoking'],energy:5},
+      {id:'fury-road',title:'Mad Max: Fury Road',year:2015,type:'movie',runtime:120,rating:8.1,genres:['action','adventure','sci-fi'],moods:['intense','fun'],energy:4},
+      {id:'lalaland',title:'La La Land',year:2016,type:'movie',runtime:128,rating:8.0,genres:['romance','drama'],moods:['romantic','fun'],energy:2},
+      {id:'dark-knight',title:'The Dark Knight',year:2008,type:'movie',runtime:152,rating:9.0,genres:['action','crime','thriller'],moods:['intense'],energy:4},
+      {id:'whiplash',title:'Whiplash',year:2014,type:'movie',runtime:106,rating:8.5,genres:['drama','thriller'],moods:['intense','thought-provoking'],energy:5},
+      {id:'coco',title:'Coco',year:2017,type:'movie',runtime:105,rating:8.4,genres:['animation','adventure','fantasy'],moods:['cozy','fun','romantic'],energy:2},
+      {id:'get-out',title:'Get Out',year:2017,type:'movie',runtime:104,rating:7.7,genres:['horror','thriller','mystery'],moods:['scary','thought-provoking'],energy:4},
+      {id:'pride-prejudice',title:'Pride & Prejudice',year:2005,type:'movie',runtime:129,rating:7.8,genres:['romance','drama'],moods:['romantic','cozy'],energy:2},
+      {id:'br2049',title:'Blade Runner 2049',year:2017,type:'movie',runtime:164,rating:8.0,genres:['sci-fi','drama','mystery'],moods:['thought-provoking','intense'],energy:5},
+      {id:'knives-out',title:'Knives Out',year:2019,type:'movie',runtime:130,rating:7.9,genres:['mystery','comedy','crime'],moods:['fun'],energy:3},
+      {id:'spiderverse',title:'Into the Spider-Verse',year:2018,type:'movie',runtime:117,rating:8.4,genres:['animation','action','adventure'],moods:['fun','intense'],energy:3},
+      {id:'shining',title:'The Shining',year:1980,type:'movie',runtime:146,rating:8.4,genres:['horror','mystery'],moods:['scary','intense'],energy:4},
+      {id:'amelie',title:'Amélie',year:2001,type:'movie',runtime:122,rating:8.3,genres:['romance','comedy'],moods:['romantic','cozy','fun'],energy:2},
+      {id:'interstellar',title:'Interstellar',year:2014,type:'movie',runtime:169,rating:8.7,genres:['sci-fi','drama','adventure'],moods:['thought-provoking','intense'],energy:5},
+      {id:'paddington2',title:'Paddington 2',year:2017,type:'movie',runtime:103,rating:8.2,genres:['comedy','adventure'],moods:['cozy','fun'],energy:1},
+      {id:'no-country',title:'No Country for Old Men',year:2007,type:'movie',runtime:122,rating:8.2,genres:['thriller','crime','drama'],moods:['intense','scary'],energy:5},
+      {id:'eeaao',title:'Everything Everywhere All at Once',year:2022,type:'movie',runtime:139,rating:7.8,genres:['sci-fi','comedy','action'],moods:['fun','thought-provoking','intense'],energy:4},
+      {id:'past-lives',title:'Past Lives',year:2023,type:'movie',runtime:105,rating:7.8,genres:['romance','drama'],moods:['romantic','thought-provoking'],energy:3},
+      {id:'dune',title:'Dune',year:2021,type:'movie',runtime:155,rating:8.0,genres:['sci-fi','adventure','drama'],moods:['intense','thought-provoking'],energy:5},
+      {id:'hereditary',title:'Hereditary',year:2018,type:'movie',runtime:127,rating:7.3,genres:['horror','mystery','thriller'],moods:['scary','intense'],energy:4},
+      {id:'princess-bride',title:'The Princess Bride',year:1987,type:'movie',runtime:98,rating:8.0,genres:['adventure','comedy','romance'],moods:['fun','cozy','romantic'],energy:1},
+      {id:'arrival',title:'Arrival',year:2016,type:'movie',runtime:116,rating:7.9,genres:['sci-fi','drama','mystery'],moods:['thought-provoking'],energy:5},
+      {id:'goodfellas',title:'Goodfellas',year:1990,type:'movie',runtime:145,rating:8.7,genres:['crime','drama'],moods:['intense'],energy:4},
+      {id:'little-women',title:'Little Women',year:2019,type:'movie',runtime:135,rating:7.8,genres:['drama','romance'],moods:['cozy','romantic'],energy:3},
+      {id:'john-wick',title:'John Wick',year:2014,type:'movie',runtime:101,rating:7.4,genres:['action','thriller','crime'],moods:['intense','fun'],energy:3},
+      {id:'eternal-sunshine',title:'Eternal Sunshine of the Spotless Mind',year:2004,type:'movie',runtime:108,rating:8.3,genres:['romance','sci-fi','drama'],moods:['romantic','thought-provoking'],energy:4},
+      {id:'toy-story',title:'Toy Story',year:1995,type:'movie',runtime:81,rating:8.3,genres:['animation','adventure','comedy'],moods:['cozy','fun'],energy:1},
+      {id:'breaking-bad',title:'Breaking Bad',year:2008,type:'series',runtime:47,seasons:5,rating:9.5,genres:['crime','drama','thriller'],moods:['intense'],energy:4},
+      {id:'the-bear',title:'The Bear',year:2022,type:'series',runtime:30,seasons:3,rating:8.6,genres:['drama','comedy'],moods:['intense','thought-provoking'],energy:4},
+      {id:'fleabag',title:'Fleabag',year:2016,type:'series',runtime:27,seasons:2,rating:8.7,genres:['comedy','drama','romance'],moods:['fun','thought-provoking','romantic'],energy:3},
+      {id:'severance',title:'Severance',year:2022,type:'series',runtime:50,seasons:1,rating:8.7,genres:['sci-fi','thriller','mystery'],moods:['thought-provoking','intense'],energy:5},
+      {id:'the-office',title:'The Office',year:2005,type:'series',runtime:22,seasons:9,rating:8.9,genres:['comedy'],moods:['cozy','fun'],energy:1},
+      {id:'stranger-things',title:'Stranger Things',year:2016,type:'series',runtime:50,seasons:4,rating:8.7,genres:['sci-fi','horror','adventure'],moods:['scary','fun','intense'],energy:3},
+      {id:'chernobyl',title:'Chernobyl',year:2019,type:'series',runtime:65,seasons:1,rating:9.3,genres:['drama','thriller'],moods:['intense','thought-provoking'],energy:5},
+      {id:'ted-lasso',title:'Ted Lasso',year:2020,type:'series',runtime:30,seasons:3,rating:8.8,genres:['comedy','drama'],moods:['cozy','fun'],energy:1},
+      {id:'the-crown',title:'The Crown',year:2016,type:'series',runtime:58,seasons:6,rating:8.6,genres:['drama'],moods:['thought-provoking','cozy'],energy:3},
+      {id:'dark',title:'Dark',year:2017,type:'series',runtime:60,seasons:3,rating:8.7,genres:['sci-fi','mystery','thriller'],moods:['thought-provoking','intense','scary'],energy:5},
+      {id:'arcane',title:'Arcane',year:2021,type:'series',runtime:41,seasons:2,rating:9.0,genres:['animation','action','fantasy'],moods:['intense','fun'],energy:3},
+      {id:'midnight-mass',title:'Midnight Mass',year:2021,type:'series',runtime:60,seasons:1,rating:7.7,genres:['horror','drama','mystery'],moods:['scary','thought-provoking'],energy:4},
+      {id:'bojack',title:'BoJack Horseman',year:2014,type:'series',runtime:25,seasons:6,rating:8.8,genres:['animation','comedy','drama'],moods:['thought-provoking','fun'],energy:3},
+      {id:'planet-earth-2',title:'Planet Earth II',year:2016,type:'series',runtime:50,seasons:1,rating:9.5,genres:['documentary'],moods:['cozy','thought-provoking'],energy:1},
+      {id:'succession',title:'Succession',year:2018,type:'series',runtime:60,seasons:4,rating:8.9,genres:['drama','comedy'],moods:['intense','thought-provoking'],energy:4}
+    ];
+    this.data.forEach((t,i)=>{ t.hue = HUES[i % HUES.length]; });
+
+    // Streaming availability (illustrative; real availability is region-specific & comes from TMDB/JustWatch in production)
+    const SVC = {
+      'inception':['Netflix'],'grand-budapest':['Disney+','Hulu'],'spirited-away':['Max','Netflix'],'parasite':['Hulu','Max'],
+      'fury-road':['Max','Netflix'],'lalaland':['Prime Video'],'dark-knight':['Max'],'whiplash':['Prime Video'],
+      'coco':['Disney+'],'get-out':['Peacock','Netflix'],'pride-prejudice':['Netflix'],'br2049':['Max'],
+      'knives-out':['Prime Video','Netflix'],'spiderverse':['Netflix'],'shining':['Max'],'amelie':['Max'],
+      'interstellar':['Prime Video','Paramount+'],'paddington2':['Netflix'],'no-country':['Paramount+','Prime Video'],
+      'eeaao':['Paramount+','Prime Video'],'past-lives':['Paramount+'],'dune':['Max'],'hereditary':['Max'],
+      'princess-bride':['Disney+'],'arrival':['Paramount+','Prime Video'],'goodfellas':['Netflix'],'little-women':['Netflix'],
+      'john-wick':['Peacock'],'eternal-sunshine':['Peacock','Prime Video'],'toy-story':['Disney+'],
+      'breaking-bad':['Netflix'],'the-bear':['Hulu','Disney+'],'fleabag':['Prime Video'],'severance':['Apple TV+'],
+      'the-office':['Peacock'],'stranger-things':['Netflix'],'chernobyl':['Max'],'ted-lasso':['Apple TV+'],
+      'the-crown':['Netflix'],'dark':['Netflix'],'arcane':['Netflix'],'midnight-mass':['Netflix'],'bojack':['Netflix'],
+      'planet-earth-2':['Max','Netflix'],'succession':['Max']
+    };
+    const BY = {
+      'inception':'Christopher Nolan','grand-budapest':'Wes Anderson','spirited-away':'Hayao Miyazaki','parasite':'Bong Joon-ho',
+      'fury-road':'George Miller','lalaland':'Damien Chazelle','dark-knight':'Christopher Nolan','whiplash':'Damien Chazelle',
+      'coco':'Lee Unkrich','get-out':'Jordan Peele','pride-prejudice':'Joe Wright','br2049':'Denis Villeneuve',
+      'knives-out':'Rian Johnson','spiderverse':'Lord & Miller','shining':'Stanley Kubrick','amelie':'Jean-Pierre Jeunet',
+      'interstellar':'Christopher Nolan','paddington2':'Paul King','no-country':'Coen Brothers','eeaao':'Daniels',
+      'past-lives':'Celine Song','dune':'Denis Villeneuve','hereditary':'Ari Aster','princess-bride':'Rob Reiner',
+      'arrival':'Denis Villeneuve','goodfellas':'Martin Scorsese','little-women':'Greta Gerwig','john-wick':'Chad Stahelski',
+      'eternal-sunshine':'Michel Gondry','toy-story':'John Lasseter','breaking-bad':'Vince Gilligan','the-bear':'Christopher Storer',
+      'fleabag':'Phoebe Waller-Bridge','severance':'Dan Erickson','the-office':'Greg Daniels','stranger-things':'The Duffer Brothers',
+      'chernobyl':'Craig Mazin','ted-lasso':'Bill Lawrence','the-crown':'Peter Morgan','dark':'Baran bo Odar',
+      'arcane':'Fortiche / Riot','midnight-mass':'Mike Flanagan','bojack':'Raphael Bob-Waksberg','planet-earth-2':'BBC Studios','succession':'Jesse Armstrong'
+    };
+    this.data.forEach(t=>{ t.services = SVC[t.id] || ['Prime Video']; t.by = BY[t.id] || ''; t.classic = t.year < 2001; });
+    this.byIdMap = {};
+    this.data.forEach(t=>{ this.byIdMap[t.id] = t; });
+    this._pq = {};
+    // Curated, verified TMDB poster paths — public image CDN, no API key, loads instantly & reliably.
+    this.POSTERS = {
+      'inception':'oYuLEt3zVCKq57qu2F8dT7NIa6f','grand-budapest':'eWdyYQreja6JGCzqHWXpWHDrrPo',
+      'spirited-away':'39wmItIWsg5sZMyRUHLkWBcuVCM','parasite':'7IiTTgloJzvGI1TAYymCfbfl3vT',
+      'fury-road':'8tZYtuWezp8JbcsvHYO0O46tFbo','lalaland':'uDO8zWDhfWwoFdKS4fzkUJt0Rf0',
+      'dark-knight':'qJ2tW6WMUDux911r6m7haRef0WH','whiplash':'7fn624j5lj3xTme2SgiLCeuedmO',
+      'coco':'gGEsBPAijhVUFoiNpgZXqRVWJt2','get-out':'tFXcEccSQMf3lfhfXKSU9iRBpa3',
+      'pride-prejudice':'sGjIvtVvTlWnia2zfJfHz81pZ9Q','br2049':'gajva2L0rPYkEWjzgFlBXCAVBE5',
+      'knives-out':'pThyQovXQrw2m0s9x82twj48Jq4','spiderverse':'iiZZdoQBEYBv6id8su7ImL0oCbD',
+      'shining':'b6ko0IKC8MdYBBPkkA1aBPLe2yz','amelie':'nSxDa3M9aMvGVLoItzWTepQ5h5d',
+      'interstellar':'gEU2QniE6E77NI6lCU6MxlNBvIx','no-country':'bj1v6YKF8yHqA489VFfnQvOJpnc',
+      'eeaao':'w3LxiVYdWWRvEVdn5RYq6jIqkb1','past-lives':'k3waqVXSnvCZWfJYNtdamTgTtTA',
+      'dune':'d5NXSklXo0qyIYkgV94XAgMIckC','hereditary':'lHV8HHlhwNup2VbpiACtlKzaGIQ',
+      'princess-bride':'dvjqlp2sAhUeFjUOfQDgqwpphHj','arrival':'x2FJsf1ElAgr63Y3PNPtJrcmpoe',
+      'goodfellas':'aKuFiU82s5ISJpGZp7YkIr3kCUd','john-wick':'fZPSd91yGE9fCcCe6OoQr6E3Bev',
+      'eternal-sunshine':'5MwkWH9tYHv3mV9OdYTMR5qreIz','toy-story':'uXDfjJbdP4ijW5hWSBrPrlKpxab',
+      'breaking-bad':'ggFHVNu6YYI5L9pCfOacjizRGt','severance':'lFf6LLrQjYldcZItzOkGmMMigP7',
+      'the-office':'qWnJzyZhyy74gjpSjIXWmuk0ifX','stranger-things':'49WJfeN0moxb9IPfGn8AIqMGskD',
+      'chernobyl':'hlLXt2tOPT6RRnjiUmoxyG1LTFi','ted-lasso':'5fhZdwP1DVJ0FyVH6vrFdHwpXIn',
+      'the-crown':'1M876KPjulVwppEpldhdc8V4o68','dark':'apbrbWs8M9lyOpJYU5WXrpFbk1Z',
+      'arcane':'fqldf2t8ztc9aiwn3k6mlX3tvRT','planet-earth-2':'9PFonBhy4cQy7Jz20NpMygczOkv',
+      'succession':'7HW47XbkNQ5fiwQFYGWdw9gs144'
+    };
+    this.galleryIds = ['interstellar','dune','parasite','dark-knight','goodfellas','spiderverse','fury-road','john-wick','the-office','arcane','br2049','knives-out','no-country','inception','get-out'];
+  }
+
+  componentDidMount(){
+    let reduced = false;
+    try { reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch(e){}
+    let wl = [], hist = [];
+    try { const raw = localStorage.getItem('filmnyt_v1'); if(raw){ const o = JSON.parse(raw); wl = o.watchlist||[]; hist = o.history||[]; } } catch(e){}
+    let user=null; try{ const u=localStorage.getItem('filmnyt_user'); if(u) user=JSON.parse(u); }catch(e){}
+    this.setState({ reduced, watchlist:wl, history:hist, user });
+    window.addEventListener('mousemove', this.onMove);
+    setTimeout(()=>this.initDust(), 60);
+  }
+  componentDidUpdate(){ if(this.state.screen==='landing') this.initDust(); }
+  componentWillUnmount(){
+    window.removeEventListener('mousemove', this.onMove);
+    if(this._dustResize) window.removeEventListener('resize', this._dustResize);
+    if(this._raf) cancelAnimationFrame(this._raf);
+    if(this._thinkT) clearInterval(this._thinkT);
+    if(this._revealT) clearTimeout(this._revealT);
+  }
+
+  persist(){ try { localStorage.setItem('filmnyt_v1', JSON.stringify({ watchlist:this.state.watchlist, history:this.state.history })); } catch(e){} }
+  setRoot(el){ this._root = el; if(el) setTimeout(()=>this.initDust(), 40); }
+  byId(id){ return this.byIdMap[id]; }
+
+  // ---------- real artwork (keyless, via Apple iTunes Search JSONP) ----------
+  setPoster(id, url){ this.setState(st=>({ posters:{...st.posters, [id]: url} })); }
+  ensurePoster(t){ if(!t) return; if(this.state.posters[t.id]!==undefined) return; this.fetchPoster(t); }
+  fetchPoster(t){ if(this._pq[t.id]) return; this._pq[t.id]=1; this.queryPoster(t,(url)=>this.setPoster(t.id, url)); }
+  queryPoster(t, done){
+    if(this.POSTERS && this.POSTERS[t.id]){ done('https://image.tmdb.org/t/p/w500/'+this.POSTERS[t.id]+'.jpg'); return; }
+    const cacheKey='filmnyt_poster5_'+t.id;
+    try{ const c=localStorage.getItem(cacheKey); if(c){ done(c); return; } }catch(e){}
+    const key = this.tmdbKey();
+    if(key){ this.queryTmdb(t, key, cacheKey, done); return; }
+    this._pqueue = this._pqueue || [];
+    this._pqueue.push({ t, done, cacheKey });
+    this._drainQueue();
+  }
+  _drainQueue(){
+    if(this._draining) return;
+    const q = this._pqueue;
+    if(!q || !q.length) return;
+    this._draining = true;
+    const { t, done, cacheKey } = q.shift();
+    const cb='__fnp'+Math.random().toString(36).slice(2);
+    const s=document.createElement('script');
+    const finish=(url)=>{ if(typeof url==='string'){ try{localStorage.setItem(cacheKey, url);}catch(e){} } try{delete window[cb];}catch(e){} if(s.parentNode) s.remove(); done(url); this._draining=false; setTimeout(()=>this._drainQueue(), 240); };
+    let settled=false; const once=(u)=>{ if(settled) return; settled=true; finish(u); };
+    window[cb]=(data)=>{ let url=false; if(data&&data.results&&data.results.length){
+        const norm=s=>(s||'').toLowerCase().replace(/&/g,'and').replace(/[^a-z0-9 ]/g,'').replace(/\s+/g,' ').trim();
+        const nt=norm(t.title); const yr=parseInt(t.year,10);
+        const want = t.type==='series' ? ['tv-episode','tv-season'] : ['feature-movie'];
+        const matchName=v=>!!v && (v===nt || v.indexOf(nt+' ')===0);
+        let best=null, bestScore=0;
+        for(const x of data.results){
+          if(!x.artworkUrl100 || want.indexOf(x.kind)<0) continue;
+          const names = t.type==='series' ? [norm(x.artistName), norm(x.collectionName)] : [norm(x.trackName)];
+          const exact = names.some(n=>n===nt);
+          if(!names.some(matchName)) continue;
+          let sc;
+          if(t.type==='series'){ sc = exact?5:2; }
+          else { const ry=parseInt((x.releaseDate||'').slice(0,4),10); const yok=ry&&Math.abs(ry-yr)<=1; if(!exact && !yok) continue; sc=(exact?3:0)+(yok?3:0); }
+          if(sc>bestScore){ bestScore=sc; best=x; }
+        }
+        if(best) url=best.artworkUrl100.replace('100x100bb','600x600bb').replace('100x100','600x600');
+      } once(url); };
+    s.onerror=()=>once(false);
+    setTimeout(()=>once(false), 6000);
+    s.src='https://itunes.apple.com/search?media=all&limit=15&term='+encodeURIComponent(t.title)+'&callback='+cb;
+    document.body.appendChild(s);
+  }
+  tmdbKey(){ try{ return (typeof window!=='undefined' && window.FILMNYT_TMDB_KEY) || localStorage.getItem('filmnyt_tmdb_key') || ''; }catch(e){ return ''; } }
+  queryTmdb(t, key, cacheKey, done){
+    const kind = t.type==='series' ? 'tv' : 'movie';
+    const yq = t.type==='series' ? '&first_air_date_year=' : '&year=';
+    const url = 'https://api.themoviedb.org/3/search/'+kind+'?api_key='+encodeURIComponent(key)+yq+t.year+'&query='+encodeURIComponent(t.title);
+    fetch(url).then(r=>r.json()).then(d=>{
+      let posterUrl=false;
+      if(d && d.results && d.results.length){
+        const r = d.results[0];
+        if(r.poster_path) posterUrl = 'https://image.tmdb.org/t/p/w500'+r.poster_path;
+        if(r.backdrop_path){ try{ localStorage.setItem('filmnyt_backdrop_'+t.id, 'https://image.tmdb.org/t/p/w1280'+r.backdrop_path); }catch(e){} }
+      }
+      if(typeof posterUrl==='string'){ try{ localStorage.setItem(cacheKey, posterUrl); }catch(e){} }
+      done(posterUrl);
+    }).catch(()=>done(false));
+  }
+  loadHeroPosters(){
+    if(this._heroLoaded) return; this._heroLoaded=true;
+    const ids=['interstellar','dune','parasite','the-bear'];
+    ids.forEach((id,i)=>{ const t=this.byId(id); if(!t) return; this.queryPoster(t,(url)=>{ const root=this._root||document; const img=root.querySelector('#fnhero'+i); if(img && typeof url==='string'){ img.src=url; img.style.opacity='1'; } }); });
+  }
+  loadGalleryPosters(){
+    if(this._galLoaded) return; this._galLoaded=true;
+    (this.galleryIds||[]).forEach((id,i)=>{ const t=this.byId(id); if(!t) return; this.queryPoster(t,(url)=>{ const root=this._root||document; const img=root.querySelector('#fngal'+i); if(img && typeof url==='string'){ img.src=url; img.style.opacity='1'; } }); });
+  }
+  bannerStyle(t){ return { position:'relative', overflow:'hidden', borderRadius:'14px', aspectRatio:'2 / 3', background:'radial-gradient(130% 120% at 30% 18%, oklch(0.42 0.11 '+t.hue+'), oklch(0.16 0.06 '+((t.hue+18)%360)+'))', border:'1px solid rgba(231,194,125,.14)', boxShadow:'0 24px 50px -24px rgba(0,0,0,.7)' }; }
+  toggleAuth(){ this.setState(st=>({ showAuth:!st.showAuth })); }
+  onAuthEmail(e){ this.setState({ authEmail:e.target.value }); }
+  continueGuest(){ const user={ name:'Guest', guest:true }; try{localStorage.setItem('filmnyt_user',JSON.stringify(user));}catch(e){} this.setState({ user, showAuth:false }); }
+  signInEmail(){ const em=(this.state.authEmail||'').trim(); if(!em) return; const user={ name: (em.split('@')[0]||'You'), email:em }; try{localStorage.setItem('filmnyt_user',JSON.stringify(user));}catch(e){} this.setState({ user, showAuth:false, authEmail:'' }); }
+  signOut(){ try{localStorage.removeItem('filmnyt_user');}catch(e){} this.setState({ user:null, showAuth:false }); }
+
+  onMove(e){
+    if(this.state.reduced || this.state.screen!=='landing') return;
+    const plane = this._root && this._root.querySelector('#fn-plane');
+    if(!plane) return;
+    const px = (e.clientX/window.innerWidth - 0.5)*2;
+    const py = (e.clientY/window.innerHeight - 0.5)*2;
+    plane.style.setProperty('--px', px.toFixed(3));
+    plane.style.setProperty('--py', py.toFixed(3));
+  }
+
+  initDust(){
+    if(this.state.reduced) return;
+    const root = this._root || document;
+    const c = root.querySelector('#fn-dust');
+    if(!c || c._fnInit) return;
+    c._fnInit = true;
+    const ctx = c.getContext('2d');
+    const dpr = Math.min(2, window.devicePixelRatio||1);
+    let W, H;
+    const resize = ()=>{ const r=c.getBoundingClientRect(); W=c.width=Math.max(1,Math.floor(r.width*dpr)); H=c.height=Math.max(1,Math.floor(r.height*dpr)); };
+    if(this._dustResize) window.removeEventListener('resize', this._dustResize);
+    this._dustResize = resize; resize();
+    window.addEventListener('resize', resize);
+    const N = Math.min(72, Math.floor((W/dpr)/16));
+    const parts = [];
+    for(let i=0;i<N;i++){ parts.push({ x:Math.random()*W, y:Math.random()*H, r:(Math.random()*1.6+0.4)*dpr, vy:-(Math.random()*0.25+0.05)*dpr, vx:(Math.random()-0.5)*0.15*dpr, a:Math.random()*0.5+0.1, t:Math.random()*6.28 }); }
+    if(this._raf) cancelAnimationFrame(this._raf);
+    const tick = ()=>{
+      if(!c.isConnected){ c._fnInit=false; return; }
+      ctx.clearRect(0,0,W,H);
+      for(const p of parts){
+        p.y += p.vy; p.x += p.vx; p.t += 0.02;
+        if(p.y < -10){ p.y = H+10; p.x = Math.random()*W; }
+        const tw = p.a*(0.55 + 0.45*Math.sin(p.t));
+        ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,6.2832);
+        ctx.fillStyle = 'rgba(231,194,125,'+tw.toFixed(3)+')'; ctx.fill();
+      }
+      this._raf = requestAnimationFrame(tick);
+    };
+    tick();
+  }
+
+  // ---------- navigation ----------
+  start(){ this.setState({ screen:'interview', step:0 }); }
+  back(){ const s=this.state.step; if(s===0) this.setState({ screen:'landing' }); else this.setState({ step:s-1 }); }
+  next(){ if(this.nextDisabled()) return; const s=this.state.step; if(s>=7) this.decide(); else this.setState({ step:s+1 }); }
+  adjust(){ this.setState({ screen:'interview', step:0 }); }
+  startOver(){ this.setState({ screen:'landing', step:0, answers:{ type:null, mood:null, energy:3, genres:[], era:'any', maxRuntime:null, loved:[], services:[] }, lovedQuery:'', ranked:[], pointer:0, cardOpened:false, showWatch:false }); }
+  toggleWatch(){ this.setState(st=>({ showWatch:!st.showWatch })); }
+  stop(e){ if(e&&e.stopPropagation) e.stopPropagation(); }
+
+  setType(v){ this.setState(st=>({ answers:{...st.answers, type:v} })); }
+  setMood(v){ this.setState(st=>({ answers:{...st.answers, mood:v} })); }
+  setEnergy(v){ this.setState(st=>({ answers:{...st.answers, energy:v} })); }
+  setRuntime(v){ this.setState(st=>({ answers:{...st.answers, maxRuntime:v} })); }
+  setEra(v){ this.setState(st=>({ answers:{...st.answers, era:v} })); }
+  toggleService(sv){ this.setState(st=>{ const has=st.answers.services.includes(sv); const services = has ? st.answers.services.filter(x=>x!==sv) : [...st.answers.services, sv]; return { answers:{...st.answers, services} }; }); }
+  onLovedInput(e){ const v=e.target.value; this.setState({ lovedQuery:v }); }
+  addLoved(id){ this.setState(st=>{ if(st.answers.loved.includes(id) || st.answers.loved.length>=3) return { lovedQuery:'' }; return { answers:{...st.answers, loved:[...st.answers.loved, id]}, lovedQuery:'' }; }); }
+  removeLoved(id){ this.setState(st=>({ answers:{...st.answers, loved:st.answers.loved.filter(x=>x!==id)} })); }
+  toggleGenre(g){ this.setState(st=>{ const has=st.answers.genres.includes(g); const genres = has ? st.answers.genres.filter(x=>x!==g) : [...st.answers.genres, g]; return { answers:{...st.answers, genres} }; }); }
+
+  nextDisabled(){
+    const a=this.state.answers, s=this.state.step;
+    if(s===0) return !a.type;
+    if(s===1) return !a.mood;
+    if(s===3) return a.genres.length===0;
+    if(s===5) return a.maxRuntime==null;
+    return false;
+  }
+
+  decide(){
+    const ranked = this.rank();
+    this.setState({ screen:'thinking', ranked, pointer:0, cardIndex:0, cardOpened:false, thinkLine:0 });
+    if(this._thinkT) clearInterval(this._thinkT);
+    this._thinkT = setInterval(()=>{ this.setState(st=>({ thinkLine:Math.min(3, st.thinkLine+1) })); }, 620);
+    const dur = this.state.reduced ? 300 : 2350;
+    if(this._revealT) clearTimeout(this._revealT);
+    this._revealT = setTimeout(()=>{ if(this._thinkT) clearInterval(this._thinkT); this.setState({ screen:'verdict' }); this.addHistory(); }, dur);
+  }
+
+  // ---------- scoring engine ----------
+  score(t, a, lp){
+    let s = 0;
+    const overlap = t.genres.filter(g => a.genres.includes(g));
+    s += overlap.length * 3;
+    const moodMatch = a.mood ? t.moods.includes(a.mood) : false;
+    if(moodMatch) s += 6;
+    const ediff = Math.abs(t.energy - a.energy);
+    s += (4 - ediff) * 1.6;
+    let runtimeFit = true;
+    if(a.maxRuntime != null && a.maxRuntime < 9999){
+      if(t.runtime <= a.maxRuntime){ s += 3; runtimeFit = true; }
+      else { s -= Math.min(4, (t.runtime - a.maxRuntime)/15); runtimeFit = false; }
+    } else { s += 3; }
+    // era
+    let eraFit = true;
+    if(a.era === 'classic'){ if(t.classic) s += 3; else { s -= 2.5; eraFit = false; } }
+    else if(a.era === 'modern'){ if(!t.classic) s += 3; else { s -= 2.5; eraFit = false; } }
+    // streaming availability (hard-ish filter)
+    let serviceFit = true;
+    if(a.services && a.services.length){
+      if(t.services.some(x => a.services.includes(x))) s += 2.5;
+      else { s -= 6; serviceFit = false; }
+    }
+    // affinity to titles they already love
+    let lovedAffinity = 0;
+    if(lp){
+      t.genres.forEach(g => { if(lp.genres[g]) lovedAffinity += 1.2 * lp.genres[g]; });
+      t.moods.forEach(m => { if(lp.moods[m]) lovedAffinity += 1.0 * lp.moods[m]; });
+      lovedAffinity = Math.min(7, lovedAffinity);
+      s += lovedAffinity;
+    }
+    let typeMismatch = false;
+    if(a.type && a.type!=='surprise' && t.type!==a.type){ s *= 0.25; typeMismatch = true; }
+    s += (t.rating - 7) * 0.4;
+    return { score:s, reasons:{ overlap, moodMatch, ediff, runtimeFit, eraFit, serviceFit, lovedAffinity, typeMismatch } };
+  }
+  rank(){
+    const a = this.state.answers;
+    const lp = { genres:{}, moods:{}, ids:{} };
+    (a.loved||[]).forEach(id => { const lt=this.byId(id); if(!lt) return; lp.ids[id]=1; lt.genres.forEach(g=>lp.genres[g]=(lp.genres[g]||0)+1); lt.moods.forEach(m=>lp.moods[m]=(lp.moods[m]||0)+1); });
+    const scored = this.data.filter(t => !lp.ids[t.id]).map(t => { const r = this.score(t,a,lp); return { id:t.id, score:r.score, reasons:r.reasons, rating:t.rating }; });
+    scored.sort((x,y)=> (y.score - x.score) || (y.rating - x.rating) || (x.id<y.id?-1:1));
+    return scored;
+  }
+  confidence(meta){
+    const a = this.state.answers;
+    let ideal = (a.genres.length*3) + 6 + 6.4 + 3 + 1.0;
+    if(a.era && a.era!=='any') ideal += 3;
+    if(a.services && a.services.length) ideal += 2.5;
+    if(a.loved && a.loved.length) ideal += 4;
+    return Math.round(Math.min(99, Math.max(54, (meta.score / Math.max(9, ideal)) * 100)));
+  }
+  confLabel(c){ return c>=85 ? 'Near-certain' : c>=70 ? 'Strong match' : 'Worth a shot'; }
+
+  cap(s){ return s ? s.charAt(0).toUpperCase()+s.slice(1) : s; }
+  glabel(g){ const map={'sci-fi':'Sci-Fi','documentary':'Documentary'}; return map[g] || (g.charAt(0).toUpperCase()+g.slice(1)); }
+  prettyGenres(arr){
+    const a = arr.map(g=>this.glabel(g));
+    if(a.length<=1) return a[0]||'';
+    if(a.length===2) return a[0]+' & '+a[1];
+    return a[0]+', '+a[1]+' & '+a[2];
+  }
+  runtimeLabel(t){ if(t.type==='series'){ const s=t.seasons; return s+' season'+(s>1?'s':'')+' · '+t.runtime+'-min eps'; } return t.runtime+' min'; }
+  metaLine(t){ return (t.type==='series'?'Series':'Film')+' · '+t.year+' · '+this.runtimeLabel(t)+' · ★ '+t.rating.toFixed(1); }
+  posterStyle(t, w, h, r){
+    return { width:(w||64)+'px', height:(h||96)+'px', minWidth:(w||64)+'px', borderRadius:(r||10)+'px',
+      background:'radial-gradient(130% 120% at 28% 16%, oklch(0.46 0.12 '+t.hue+'), oklch(0.18 0.07 '+((t.hue+16)%360)+'))',
+      border:'1px solid rgba(231,194,125,.28)', display:'flex', alignItems:'center', justifyContent:'center',
+      overflow:'hidden', position:'relative', boxShadow:'0 18px 40px -18px rgba(0,0,0,.7)' };
+  }
+  why(t, meta, a){
+    const moodPhrase = { cozy:'a warm, low-stakes', intense:'a gripping, high-tension', 'thought-provoking':'a cerebral, slow-burn', fun:'a breezy, crowd-pleasing', romantic:'a tender, heart-first', scary:'a nervy, lights-off' }[a.mood] || 'a confident';
+    const gl = meta.reasons.overlap.length ? meta.reasons.overlap : [t.genres[0]];
+    const gtext = this.prettyGenres(gl);
+    const energyText = meta.reasons.ediff<=1 ? 'matches the headspace you asked for' : 'nudges your energy in just the right direction';
+    const rt = (meta.reasons.runtimeFit && a.maxRuntime!=null && a.maxRuntime<9999) ? ' and slots inside your time' : '';
+    let base = moodPhrase+' '+gtext+' pick that '+energyText+rt;
+    if(a.loved && a.loved.length && meta.reasons.lovedAffinity>=1.9){ const lt=this.byId(a.loved[0]); if(lt) base += ', cut from the same cloth as '+lt.title; }
+    else if(a.era==='classic' && t.classic){ base += ', with the patina of a true classic'; }
+    else if(a.services && a.services.length && meta.reasons.serviceFit){ base += ', and it\u2019s already on a service you have'; }
+    return this.cap(base+'.');
+  }
+
+  primaryMeta(){ const r=this.state.ranked; if(!r.length) return null; return r[this.state.pointer % r.length]; }
+  altMeta(i){ const r=this.state.ranked; if(r.length<3) return null; return r[(this.state.pointer+i) % r.length]; }
+
+  addHistory(){
+    const m = this.primaryMeta(); if(!m) return; const t=this.byId(m.id);
+    this.setState(st=>{ const hist=[{ id:t.id, title:t.title, year:t.year }, ...st.history.filter(h=>h.id!==t.id)].slice(0,12); return { history:hist }; }, this.persist);
+  }
+  reroll(){ this.setState(st=>({ pointer:(st.pointer+1) % Math.max(1, st.ranked.length) }), this.addHistory.bind(this)); }
+  swapTo(i){ this.setState(st=>({ pointer:(st.pointer+i) % st.ranked.length }), this.addHistory.bind(this)); }
+  onCardSelect(i){ this.setState({ cardIndex:i, cardOpened:false }); }
+  onCardOpen(i){ this.setState({ cardIndex:i, cardOpened:true }); }
+  saveTitle(id){ const t=this.byId(id); if(!t) return; this.setState(st=>{ if(st.watchlist.some(w=>w.id===id)) return {}; const wl=[{ id:t.id, title:t.title, year:t.year, metaLine:this.metaLine(t), hue:t.hue, letter:t.title.charAt(0) }, ...st.watchlist]; return { watchlist:wl }; }, this.persist); }
+  saveCurrent(){
+    const m=this.primaryMeta(); if(!m) return; const t=this.byId(m.id);
+    this.setState(st=>{ if(st.watchlist.some(w=>w.id===t.id)) return {}; const wl=[{ id:t.id, title:t.title, year:t.year, metaLine:this.metaLine(t), hue:t.hue, letter:t.title.charAt(0) }, ...st.watchlist]; return { watchlist:wl }; }, this.persist);
+  }
+  removeWatch(id){ this.setState(st=>({ watchlist:st.watchlist.filter(w=>w.id!==id) }), this.persist); }
+
+  // ---------- option styles ----------
+  cardStyle(sel){
+    return { cursor:'pointer', borderRadius:'16px', padding:'18px', background: sel?'rgba(231,194,125,.10)':'rgba(16,22,40,.5)', border: sel?'1px solid rgba(231,194,125,.75)':'1px solid rgba(231,194,125,.14)', backdropFilter:'blur(8px)', transition:'transform .25s ease, border-color .25s ease, background .25s ease, box-shadow .25s ease', boxShadow: sel?'0 14px 44px -18px rgba(231,194,125,.55)':'none' };
+  }
+  chipStyle(sel){
+    return { cursor:'pointer', padding:'10px 17px', borderRadius:'999px', fontSize:'14px', fontWeight:600, fontFamily:"'Hanken Grotesk',sans-serif", border: sel?'1px solid rgba(231,194,125,.8)':'1px solid rgba(231,194,125,.16)', background: sel?'rgba(231,194,125,.14)':'rgba(16,22,40,.5)', color: sel?'#f3efe6':'#c7cdda', transition:'all .2s ease' };
+  }
+  dotStyle(hue){ return { width:'11px', height:'11px', borderRadius:'50%', flexShrink:0, background:'oklch(0.7 0.16 '+hue+')', boxShadow:'0 0 12px oklch(0.7 0.16 '+hue+')' }; }
+  energyDot(filled){ return { width:'22px', height:'22px', borderRadius:'50%', cursor:'pointer', padding:0, border:'1px solid rgba(231,194,125,.6)', background: filled?'#e7c27d':'rgba(8,11,22,.95)', boxShadow: filled?'0 0 16px rgba(231,194,125,.6)':'none', transition:'all .2s ease' }; }
+
+  buildFlipCard(t, posterUrl){
+    const h = React.createElement;
+    const hasImg = typeof posterUrl==='string';
+    const loading = posterUrl===undefined;
+    const kids = [
+      h('div',{key:'grad',style:{position:'absolute',inset:0,background:'radial-gradient(130% 120% at 28% 16%, oklch(0.5 0.13 '+t.hue+'), oklch(0.16 0.07 '+((t.hue+16)%360)+'))'}})
+    ];
+    if(hasImg) kids.push(h('img',{key:'img',src:posterUrl,alt:t.title+' artwork',style:{position:'absolute',inset:0,width:'100%',height:'100%',objectFit:'cover',animation:'fnImgIn .5s ease'}}));
+    if(loading) kids.push(h('div',{key:'shim',style:{position:'absolute',inset:0,background:'linear-gradient(90deg,rgba(255,255,255,0),rgba(255,255,255,.09),rgba(255,255,255,0))',backgroundSize:'200% 100%',animation:'fnShimmer 1.25s linear infinite'}}));
+    kids.push(h('div',{key:'vig',style:{position:'absolute',inset:0,boxShadow:'inset 0 0 90px 14px rgba(0,0,0,.5)'}}));
+    kids.push(h('div',{key:'sheen',style:{position:'absolute',inset:0,background:'linear-gradient(135deg,rgba(255,255,255,.12),rgba(255,255,255,0) 42%)'}}));
+    kids.push(h('div',{key:'rating',style:{position:'absolute',top:'14px',right:'14px',background:'rgba(8,11,22,.72)',backdropFilter:'blur(6px)',border:'1px solid rgba(231,194,125,.4)',borderRadius:'999px',padding:'5px 11px',fontFamily:"'JetBrains Mono',monospace",fontSize:'12px',color:'#e7c27d'}}, '★ '+t.rating.toFixed(1)));
+    kids.push(h('div',{key:'bottom',style:{position:'absolute',left:0,right:0,bottom:0,padding:'56px 20px 20px',background:'linear-gradient(180deg,rgba(5,7,15,0),rgba(5,7,15,.92))'}},
+      h('div',{key:'badge',style:{fontFamily:"'JetBrains Mono',monospace",fontSize:'10px',letterSpacing:'.2em',color:'#e7c27d',textTransform:'uppercase',marginBottom:'7px'}}, t.type==='series'?'Series':'Feature film'),
+      h('div',{key:'ttl',style:{fontFamily:"'Newsreader',serif",fontWeight:700,fontSize:'26px',lineHeight:1.05}}, t.title),
+      h('div',{key:'yr',style:{fontFamily:"'JetBrains Mono',monospace",fontSize:'12px',color:'#9aa3ba',marginTop:'5px'}}, t.year)
+    ));
+    return h('div', { key:'fc-'+t.id+'-'+this.state.pointer, style:{
+        width:'300px', height:'444px', borderRadius:'18px', position:'relative', overflow:'hidden',
+        border:'1px solid rgba(231,194,125,.4)', boxShadow:'0 44px 100px -34px rgba(0,0,0,.85), inset 0 0 0 1px rgba(231,194,125,.1)',
+        animation:'fnFlip 1s cubic-bezier(.2,.7,.2,1) both', transformStyle:'preserve-3d'
+      }}, ...kids);
+  }
+
+  renderVals(){
+    const st = this.state, a = st.answers;
+    const screen = st.screen;
+
+    const gallery = (this.galleryIds||[]).map((id)=>{ const gt=this.byId(id); this.ensurePoster(gt); const u=st.posters[id]; const style=this.bannerStyle(gt); if(typeof u==='string'){ style.backgroundImage='url("'+u+'")'; style.backgroundSize='cover'; style.backgroundPosition='center'; } return { key:id, title:gt.title, year:gt.year, rating:gt.rating.toFixed(1), genre:this.glabel(gt.genres[0]), typeLabel: gt.type==='series'?'Series':'Film', hasArt: typeof u==='string', style }; });
+    const galleryA = gallery.slice(0,5), galleryB = gallery.slice(5,10), galleryC = gallery.slice(10,15);
+
+    const types = [['movie','A film','one and done'],['series','A series','something to live in'],['surprise','Surprise me','you pick the format']];
+    const typeOptions = types.map(([k,l,d])=>({ key:k, label:l, desc:d, style:this.cardStyle(a.type===k), onClick:()=>this.setType(k) }));
+
+    const moods = [['cozy','Cozy','warm & low-stakes',60],['intense','Intense','edge of your seat',30],['thought-provoking','Thoughtful','stays with you',250],['fun','Fun','pure good time',180],['romantic','Romantic','heart-first',350],['scary','Scary','lights off',300]];
+    const moodOptions = moods.map(([k,l,d,hue])=>({ key:k, label:l, desc:d, style:this.cardStyle(a.mood===k), dotStyle:this.dotStyle(hue), onClick:()=>this.setMood(k) }));
+
+    const energyOptions = [1,2,3,4,5].map(n=>({ n, style:this.energyDot(n<=a.energy), onClick:()=>this.setEnergy(n) }));
+    const energyLabels = {1:'Total switch-off',2:'Easy watch',3:'Balanced',4:'Lean in',5:'Make me think'};
+    const ef = (a.energy-1)/4;
+    const energyRangeStyle = { position:'absolute', top:'50%', left:0, transform:'translateY(-50%)', height:'4px', width:'calc('+(ef*100)+'% - '+(ef*22-11)+'px)', borderRadius:'999px', background:'linear-gradient(90deg,#cf9f4f,#e7c27d)', zIndex:2 };
+    const energyThumbStyle = { position:'absolute', top:'50%', left:'calc('+(ef*100)+'% - '+(ef*22)+'px)', transform:'translateY(-50%)', width:'22px', height:'22px', borderRadius:'50%', background:'#fff', boxShadow:'0 4px 16px rgba(0,0,0,.55), 0 0 0 5px rgba(231,194,125,.16)', pointerEvents:'none', zIndex:3, transition:'left .35s cubic-bezier(.2,.8,.2,1)' };
+    const energyNumPos = { position:'absolute', bottom:'44px', left:'calc('+(ef*100)+'% - '+(ef*22-11)+'px)', transform:'translateX(-50%)', pointerEvents:'none', transition:'left .35s cubic-bezier(.2,.8,.2,1)' };
+    const _h = React.createElement;
+    const energyNumber = _h('div', { style:{ height:'1.1em', overflow:'hidden', display:'inline-block', lineHeight:'1.1em', fontFamily:"'Newsreader',serif", fontWeight:700, fontSize:'40px', color:'#e7c27d', textShadow:'0 6px 24px rgba(231,194,125,.4)' } },
+      _h('div', { style:{ transform:'translateY(-'+((a.energy-1)*1.1)+'em)', transition:'transform .5s cubic-bezier(.16,1,.3,1)' } },
+        [1,2,3,4,5].map(n=>_h('div', { key:n, style:{ height:'1.1em' } }, n))
+      )
+    );
+
+    const genres = ['action','comedy','drama','sci-fi','thriller','horror','romance','animation','mystery','crime','documentary','adventure','fantasy'];
+    const genreOptions = genres.map(g=>({ key:g, label:this.glabel(g), style:this.chipStyle(a.genres.includes(g)), onClick:()=>this.toggleGenre(g) }));
+
+    const runtimes = [[45,'Quick hit','under ~45 min a sitting'],[90,'Standard','up to ~1½ hours'],[150,'Settle in','up to ~2½ hours'],[9999,'No limit',"as long as it's good"]];
+    const runtimeOptions = runtimes.map(([k,l,d])=>({ key:k, label:l, desc:d, style:this.cardStyle(a.maxRuntime===k), onClick:()=>this.setRuntime(k) }));
+
+    const eras = [['modern','Modern','2000 \u2192 today'],['classic','Classics','the canon, pre-2000'],['any','No preference','great is great, any era']];
+    const eraOptions = eras.map(([k,l,d])=>({ key:k, label:l, desc:d, style:this.cardStyle(a.era===k), onClick:()=>this.setEra(k) }));
+
+    const svcList = ['Netflix','Max','Disney+','Prime Video','Apple TV+','Hulu','Peacock','Paramount+'];
+    const serviceOptions = svcList.map(sv=>({ key:sv, label:sv, style:this.chipStyle(a.services.includes(sv)), onClick:()=>this.toggleService(sv) }));
+
+    const lq = (st.lovedQuery||'').trim().toLowerCase();
+    const lovedSuggestions = lq.length ? this.data.filter(t => t.title.toLowerCase().indexOf(lq)>=0 && !a.loved.includes(t.id)).slice(0,6).map(t=>({ key:t.id, title:t.title, sub:(t.type==='series'?'Series':'Film')+' \u00b7 '+t.year, onClick:()=>this.addLoved(t.id) })) : [];
+    const lovedChips = a.loved.map(id=>{ const t=this.byId(id); return { key:id, title:t?t.title:id, onRemove:()=>this.removeLoved(id) }; });
+
+    const dots = [0,1,2,3,4,5,6,7].map(i=>({ style:{ width: i===st.step?'22px':'8px', height:'8px', borderRadius:'999px', background: i<=st.step?'#e7c27d':'rgba(231,194,125,.2)', transition:'all .3s ease' } }));
+
+    const kickers = ['THE FORMAT','THE MOOD','THE ENERGY','THE WORLDS','THE ERA','THE TIME','THE FAVOURITES','THE SERVICES'];
+    const disabled = this.nextDisabled();
+    const nextStyle = { cursor: disabled?'not-allowed':'pointer', border:'none', fontFamily:"'Hanken Grotesk',sans-serif", fontWeight:700, fontSize:'14px', color:'#1a130a', padding:'13px 26px', borderRadius:'999px', background: disabled?'rgba(231,194,125,.25)':'linear-gradient(135deg,#f0d394,#e7c27d 55%,#cf9f4f)', opacity: disabled?0.5:1, boxShadow: disabled?'none':'0 12px 34px -12px rgba(231,194,125,.6)', transition:'transform .25s ease' };
+
+    // verdict views
+    let primary = {}, flipCard = null, alternates = [];
+    const pm = this.primaryMeta();
+    if(pm){
+      const t = this.byId(pm.id);
+      const conf = this.confidence(pm);
+      const saved = st.watchlist.some(w=>w.id===t.id);
+      primary = {
+        title:t.title, metaLine:this.metaLine(t), genresText:this.prettyGenres(t.genres),
+        by: t.by ? ((t.type==='series'?'Created by ':'Directed by ')+t.by) : '', hasBy: !!t.by,
+        why:this.why(t,pm,a), confidence:conf, confidenceLabel:this.confLabel(conf),
+        confStyle:{ width:conf+'%', height:'100%' },
+        saveLabel: saved ? 'Saved ✓' : '♥ Save to watchlist',
+        saveStyle: { cursor:'pointer', border:'none', fontFamily:"'Hanken Grotesk',sans-serif", fontWeight:700, fontSize:'14px', color: saved?'#1a130a':'#1a130a', padding:'13px 24px', borderRadius:'999px', background: saved?'rgba(231,194,125,.55)':'linear-gradient(135deg,#f0d394,#e7c27d 55%,#cf9f4f)', boxShadow: saved?'none':'0 12px 34px -12px rgba(231,194,125,.6)', transition:'transform .25s ease' }
+      };
+      this.ensurePoster(t);
+      try{ const bd=localStorage.getItem('filmnyt_backdrop_'+t.id); primary.hasBackdrop=!!bd; if(bd){ primary.backdropStyle={ position:'absolute', inset:0, backgroundImage:'url("'+bd+'")', backgroundSize:'cover', backgroundPosition:'center top', opacity:.3, filter:'saturate(1.05)' }; } }catch(e){ primary.hasBackdrop=false; }
+      const pUrl = st.posters[t.id];
+      flipCard = this.buildFlipCard(t, pUrl);
+      [1,2].forEach(i=>{
+        const am = this.altMeta(i); if(!am) return; const at=this.byId(am.id);
+        this.ensurePoster(at); const au=st.posters[at.id]; const ap=this.posterStyle(at,60,90,9); if(typeof au==='string'){ ap.backgroundImage='url("'+au+'")'; ap.backgroundSize='cover'; ap.backgroundPosition='center'; }
+        alternates.push({ key:at.id, title:at.title, metaLine:this.metaLine(at), poster:ap, loading: au===undefined, onClick:()=>this.swapTo(i) });
+      });
+    }
+
+    // verdict carousel data
+    let carouselMovies = [], card = {};
+    if(st.ranked.length){
+      const top = st.ranked.slice(0,6);
+      carouselMovies = top.map((m)=>{ const tt=this.byId(m.id); this.ensurePoster(tt); const u=st.posters[m.id]; return { id:tt.id, title:tt.title, year:tt.year, typeLabel: tt.type==='series'?'Series':'Film', rating: tt.rating.toFixed(1), genre:this.glabel(tt.genres[0]), genresText:this.prettyGenres(tt.genres), hue:tt.hue, poster: typeof u==='string'?u:'', by: tt.by?((tt.type==='series'?'Created by ':'Directed by ')+tt.by):'' }; });
+      const ci = Math.max(0, Math.min(top.length-1, st.cardIndex||0));
+      const cm = top[ci]; const ct = this.byId(cm.id); const conf=this.confidence(cm); const savedC = st.watchlist.some(w=>w.id===ct.id); const cu = st.posters[ct.id];
+      const cps = { width:'92px', flexShrink:0, borderRadius:'12px', aspectRatio:'2 / 3', border:'1px solid rgba(231,194,125,.25)', boxShadow:'0 14px 34px -16px rgba(0,0,0,.7)', background:'radial-gradient(130% 120% at 30% 18%, oklch(0.46 0.12 '+ct.hue+'), oklch(0.15 0.06 '+((ct.hue+18)%360)+'))' };
+      if(typeof cu==='string'){ cps.backgroundImage='url("'+cu+'")'; cps.backgroundSize='cover'; cps.backgroundPosition='center'; }
+      card = { id:ct.id, title:ct.title, metaLine:this.metaLine(ct), by: ct.by?((ct.type==='series'?'Created by ':'Directed by ')+ct.by):'', hasBy:!!ct.by, genresText:this.prettyGenres(ct.genres), why:this.why(ct,cm,a), confidence:conf, confidenceLabel:this.confLabel(conf), confStyle:{width:conf+'%',height:'100%'}, posterStyle:cps, saved:savedC, saveLabel: savedC?'Saved \u2713':'\u2665 Save to watchlist', saveStyle:{ cursor:'pointer', border:'none', fontFamily:"'Hanken Grotesk',sans-serif", fontWeight:700, fontSize:'14px', color:'#1a130a', padding:'12px 22px', borderRadius:'999px', background: savedC?'rgba(231,194,125,.55)':'linear-gradient(135deg,#f0d394,#e7c27d 55%,#cf9f4f)', boxShadow: savedC?'none':'0 12px 30px -12px rgba(231,194,125,.6)' }, onSave:()=>this.saveTitle(ct.id) };
+    }
+
+    const watchlist = st.watchlist.map(w=>{ const wt=this.byId(w.id); if(wt) this.ensurePoster(wt); const wu=st.posters[w.id]; const wp=this.posterStyle({hue:w.hue},52,78,9); if(typeof wu==='string'){ wp.backgroundImage='url("'+wu+'")'; wp.backgroundSize='cover'; wp.backgroundPosition='center'; } return { key:w.id, title:w.title, metaLine:w.metaLine, poster:wp, loading: wu===undefined, onRemove:()=>this.removeWatch(w.id) }; });
+    const history = st.history.map(h=>({ key:h.id, title:h.title, year:h.year }));
+
+    return {
+      setRoot:this.setRoot,
+      isLanding: screen==='landing', isInterview: screen==='interview', isThinking: screen==='thinking', isVerdict: screen==='verdict',
+      isStepType: st.step===0, isStepMood: st.step===1, isStepEnergy: st.step===2, isStepGenres: st.step===3, isStepEra: st.step===4, isStepRuntime: st.step===5, isStepLoved: st.step===6, isStepServices: st.step===7,
+      sceneNo: '0'+(st.step+1), stepKicker: kickers[st.step],
+      progressStyle: { width:(((st.step+1)/8)*100)+'%', height:'100%' },
+      typeOptions, moodOptions, energyLabel:energyLabels[a.energy], energyValue:a.energy, energyRangeStyle, energyThumbStyle, energyNumPos, energyNumber, onEnergyInput:(e)=>this.setEnergy(parseInt(e.target.value,10)||1),
+      genreOptions, runtimeOptions, eraOptions, serviceOptions, lovedSuggestions, lovedChips, lovedQuery: st.lovedQuery||'', dots,
+      hasSuggestions: lovedSuggestions.length>0,
+      nextDisabled:disabled, nextStyle, nextLabel: st.step===7 ? 'Decide for me  →' : 'Continue  →',
+      thinkingText: ['Reading your mood…','Weighing the genres…','Checking the clock…','Committing.'][st.thinkLine],
+      primary, flipCard, alternates,
+      carouselMovies, card, cardIndex: st.cardIndex||0, cardOpened: st.cardOpened, browseHint: !st.cardOpened, onCardSelect:(i)=>this.onCardSelect(i), onCardOpen:(i)=>this.onCardOpen(i),
+      galleryA, galleryB, galleryC, gallery,
+      showAuth: st.showAuth, isSignedIn: !!st.user, userLabel: st.user ? (st.user.guest?'Guest':(st.user.name||'You')) : 'Sign in', authEmail: st.authEmail||'',
+      toggleAuth:()=>this.toggleAuth(), continueGuest:()=>this.continueGuest(), signInEmail:()=>this.signInEmail(), onAuthEmail:(e)=>this.onAuthEmail(e), signOut:()=>this.signOut(),
+      watchCount: st.watchlist.length, watchlist, watchEmpty: st.watchlist.length===0,
+      history, hasHistory: st.history.length>0, showWatch: st.showWatch,
+      start:()=>this.start(), back:()=>this.back(), next:()=>this.next(), adjust:()=>this.adjust(), startOver:()=>this.startOver(),
+      onLovedInput:(e)=>this.onLovedInput(e),
+      playVid:(e)=>{ try{ const v=e.target||e.currentTarget; v.muted=true; const p=v.play(); if(p&&p.catch) p.catch(()=>{}); }catch(_){} },
+      reroll:()=>this.reroll(), saveCurrent:()=>this.saveCurrent(), toggleWatch:()=>this.toggleWatch(), stop:(e)=>this.stop(e)
+    };
+  }
+}
+</script>
+</body>
+</html>
